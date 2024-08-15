@@ -1,0 +1,171 @@
+---
+openapi: 3.0.0
+info:
+  title: AVCP
+  description: Bridging gap between the Ids other systems may have and the Ids they need to consume an OOTB open API
+  version: 1.0.2
+servers:
+- url: https://attcommdev1.service-now.com/api/x_att2_avcp
+  description: Development Environment
+- url: https://attcommtest.service-now.com/api/x_att2_avcp
+  description: Test Environment
+- url: https://virtserver.swaggerhub.com/dpatino2/AVCP/1.0.2
+  description: SwaggerHub API Auto Mocking
+security:
+- BasicAuth: []
+paths:
+  /order_id_resolution/getCustomerOrderIds:
+    get:
+      tags:
+      - Order Id Resolution
+      description: Returns the order's Ids and hierarchy
+      parameters:
+      - name: orderLineNumber
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderIds'
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: "Error: Order Line Number not found"
+          content:
+            application/json:
+              schema:
+                type: string
+  /service_accounts_by_ubid/{serviceaccount}:
+    get:
+      tags:
+      - Account Resolution from Alternate Identity
+      description: ""
+      parameters:
+      - name: serviceaccount
+        in: path
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
+  /existing_site_check/{ubSubaccountId}/{glid}:
+    get:
+      tags:
+      - Check for matching location by GLID for given a UB Subaccount ID
+      description: ""
+      parameters:
+      - name: ubSubaccountId
+        in: path
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: "8310000779646"
+      - name: glid
+        in: path
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: 000013X79S
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteCheckResult'
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: "Error: UB Subaccount Id not found"
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    SiteCheckResult:
+      type: object
+      properties:
+        siteFound:
+          type: boolean
+          example: true
+        productInstanceDetail:
+          type: array
+          items:
+            $ref: '#/components/schemas/productInstanceDetail'
+    OrderIds:
+      type: object
+      properties:
+        customerOrderNumber:
+          type: string
+          example: ORD000031864
+        customerOrderExtId:
+          type: string
+          example: 801KQ000000LMTzYAO:801KQ000000LMU4YAO
+        customerOrderSysId:
+          type: string
+          example: dad63a33477cce50b8e18e0f316d4342
+        orderLines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineIds'
+    OrderLineIds:
+      type: object
+      properties:
+        olSysId:
+          type: string
+          example: 16d63a33477cce50b8e18e0f316d4347
+        olExtId:
+          type: string
+          example: 802KQ000000LNVKYA4
+        olNumber:
+          type: string
+          example: ORD000031864
+        olSpecCode:
+          type: string
+          example: PR-ABV
+    productInstanceDetail:
+      type: object
+      properties:
+        prodInvSysId:
+          type: string
+          example: 17d63a33477cce50b8e18e0f316d4348
+        prodInvExtId:
+          type: string
+          example: 5b1928b6-0643-4c61-ae18-f543a4bfd37a
+        prodInvSpecCode:
+          type: string
+          example: PR-ABV
+        prodInvState:
+          type: string
+          example: Active
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
